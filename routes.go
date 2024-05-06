@@ -3,8 +3,8 @@ package account
 import (
 	"net/http"
 
+	"github.com/henrieto/account/handlers"
 	"github.com/henrieto/jax"
-	"github.com/henrieto/plugins/handlers"
 )
 
 var Routes = []jax.Route{
