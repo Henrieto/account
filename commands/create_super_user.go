@@ -15,4 +15,18 @@ var CreateSuper = command.Command{
 		password, _ := c.GetFlag("password")
 		fmt.Println(name, password)
 	},
+	Flags: []*command.Flag{
+		{
+			Requird:    false,
+			Name:       "email",
+			Short_Name: "e",
+			Help_Text:  "user email",
+		},
+		{
+			Requird:    false,
+			Name:       "password",
+			Short_Name: "p",
+			Help_Text:  "user password",
+		},
+	},
 }
