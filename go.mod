@@ -1,4 +1,4 @@
-module github.com/henrieto/plugins
+module github.com/henrieto/account
 
 go 1.22.1
 
