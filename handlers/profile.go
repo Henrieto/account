@@ -44,7 +44,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	// check if the user email already exists in the database
 	email_exists := repository.UserRepository.EmailExists(Background, user.Email)
 	if email_exists {
-		_err := validators.NewSignupValidationErrorData(nil)
+		_err := data_validator.Error(nil)
 		_err.AddError("Email", "email is already taken")
 		response := map[string]any{
 			"status": "failed",
