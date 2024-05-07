@@ -72,7 +72,6 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		"data":   user,
 	}
 	jax.Json(w, response, http.StatusOK)
-	return
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {}
