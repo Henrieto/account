@@ -8,7 +8,8 @@ type User struct {
 	ID           pgtype.UUID        `json:"id"`
 	Username     string             `json:"username"`
 	Email        string             `json:"email"`
-	Names        string             `json:"names"`
+	FirstName    string             `json:"first_name"`
+	LastName     string             `json:"last_name"`
 	Gender       string             `json:"gender"`
 	PasswordHash string             `json:"-"`
 	Verified     pgtype.Bool        `json:"verified"`
@@ -22,7 +23,7 @@ type User struct {
 }
 
 func (user *User) HasPermission(permission string) bool {
-	return user.Superuser.Bool == true
+	return user.Superuser.Bool
 }
 
 func (user *User) HasPermissions(permissions ...string) (has bool) {

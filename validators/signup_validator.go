@@ -1,9 +1,12 @@
 package validators
 
 import (
+	"time"
+
 	"github.com/go-playground/validator"
 	"github.com/henrieto/account/auth"
 	"github.com/henrieto/account/models"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SignupData struct {
@@ -12,17 +15,20 @@ type SignupData struct {
 	Email           string `json:"email" validate:"required,email"`
 	Gender          string
 	Password        string `json:"password" validate:"required"`
+	Birthday        time.Time
 	ConfirmPassword string `json:"confirm_password" validate:"required"`
 	Terms           string `json:"terms" validate:"required"`
 }
 
 type SignupValidationErrorData struct {
-	FirstName       string `json:"first_name"`
-	LastName        string `json:"last_name"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
-	Terms           string `json:"terms"`
+	FirstName       string `json:"first_name" validate:"required"`
+	LastName        string `json:"last_name" validate:"required"`
+	Email           string `json:"email" validate:"required,email"`
+	Gender          string
+	Password        string `json:"password" validate:"required"`
+	Birthday        string
+	ConfirmPassword string `json:"confirm_password" validate:"required"`
+	Terms           string `json:"terms" validate:"required"`
 }
 
 func (vaError SignupValidationErrorData) Error() string {
@@ -87,7 +93,7 @@ func (data *SignupData) Valid() (*models.User, error) {
 	var validate *validator.Validate = validator.New()
 	err := validate.Struct(data)
 	if err != nil {
-		return nil, err
+		return nil, data.Error(err)
 	}
 	valError := data.Error(nil)
 	if data.Password != data.ConfirmPassword {
@@ -106,17 +112,18 @@ func (data *SignupData) Valid() (*models.User, error) {
 		return nil, valError
 	}
 
-	user := models.NewUser()
-	user.FirstName = data.FirstName
-	user.LastName = data.LastName
-	user.Email = data.Email
-	user.PasswordHash = data.Password
-
-	password_hash, err := auth.HashPassword(data.Password)
+	password, err := auth.HashPassword(data.Password)
 	if err != nil {
 		panic(err)
 	}
-	user.PasswordHash = string(password_hash)
+	user := &models.User{
+		FirstName:    data.FirstName,
+		LastName:     data.LastName,
+		Email:        data.Email,
+		Gender:       data.Gender,
+		Birthday:     pgtype.Timestamptz{Time: data.Birthday},
+		PasswordHash: string(password),
+	}
 
 	return user, nil
 }

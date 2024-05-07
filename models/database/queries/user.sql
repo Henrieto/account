@@ -2,7 +2,8 @@
 INSERT INTO users (
     username,
     email,
-    names,
+    first_name,
+    last_name,
     gender,
     password_hash,
     verified,
@@ -11,14 +12,15 @@ INSERT INTO users (
     created_at,
     updated_at
 )
-VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 )
+VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11)
 RETURNING *;
 
 -- name: CreateStaff :one
 INSERT INTO users (
     username,
     email,
-    names,
+    first_name,
+    last_name,
     gender,
     password_hash,
     verified,
@@ -27,14 +29,15 @@ INSERT INTO users (
     created_at,
     updated_at
 )
-VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10)
+VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11)
 RETURNING *;
 
 -- name: CreateSuperUser :one
 INSERT INTO users (
     username,
     email,
-    names,
+    first_name,
+    last_name,
     gender,
     password_hash,
     verified,
@@ -43,7 +46,7 @@ INSERT INTO users (
     created_at,
     updated_at
 )
-VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10)
+VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11)
 RETURNING *;
 
 
@@ -68,11 +71,12 @@ WHERE email = $1 LIMIT 1;
 UPDATE users
   SET
     username = $1,
-    names = $2,
-    gender = $3,
-    birthday = $4,
-    updated_at = $5
-WHERE id = $6
+    first_name = $2,
+    last_name = $3,
+    gender = $4,
+    birthday = $5,
+    updated_at = $6
+WHERE id = $7
 RETURNING *;
 
 -- name: UpdateUserPassword :one

@@ -36,7 +36,8 @@ type User struct {
 	ID           pgtype.UUID        `json:"id"`
 	Username     string             `json:"username"`
 	Email        string             `json:"email"`
-	Names        string             `json:"names"`
+	FirstName    string             `json:"first_name"`
+	LastName     string             `json:"last_name"`
 	Gender       string             `json:"gender"`
 	PasswordHash string             `json:"password_hash"`
 	Verified     pgtype.Bool        `json:"verified"`

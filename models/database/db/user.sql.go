@@ -15,7 +15,8 @@ const createStaff = `-- name: CreateStaff :one
 INSERT INTO users (
     username,
     email,
-    names,
+    first_name,
+    last_name,
     gender,
     password_hash,
     verified,
@@ -24,14 +25,15 @@ INSERT INTO users (
     created_at,
     updated_at
 )
-VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10)
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11)
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type CreateStaffParams struct {
 	Username     string             `json:"username"`
 	Email        string             `json:"email"`
-	Names        string             `json:"names"`
+	FirstName    string             `json:"first_name"`
+	LastName     string             `json:"last_name"`
 	Gender       string             `json:"gender"`
 	PasswordHash string             `json:"password_hash"`
 	Verified     pgtype.Bool        `json:"verified"`
@@ -45,7 +47,8 @@ func (q *Queries) CreateStaff(ctx context.Context, arg CreateStaffParams) (User,
 	row := q.db.QueryRow(ctx, createStaff,
 		arg.Username,
 		arg.Email,
-		arg.Names,
+		arg.FirstName,
+		arg.LastName,
 		arg.Gender,
 		arg.PasswordHash,
 		arg.Verified,
@@ -59,7 +62,8 @@ func (q *Queries) CreateStaff(ctx context.Context, arg CreateStaffParams) (User,
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -78,7 +82,8 @@ const createSuperUser = `-- name: CreateSuperUser :one
 INSERT INTO users (
     username,
     email,
-    names,
+    first_name,
+    last_name,
     gender,
     password_hash,
     verified,
@@ -87,14 +92,15 @@ INSERT INTO users (
     created_at,
     updated_at
 )
-VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10)
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11)
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type CreateSuperUserParams struct {
 	Username     string             `json:"username"`
 	Email        string             `json:"email"`
-	Names        string             `json:"names"`
+	FirstName    string             `json:"first_name"`
+	LastName     string             `json:"last_name"`
 	Gender       string             `json:"gender"`
 	PasswordHash string             `json:"password_hash"`
 	Verified     pgtype.Bool        `json:"verified"`
@@ -108,7 +114,8 @@ func (q *Queries) CreateSuperUser(ctx context.Context, arg CreateSuperUserParams
 	row := q.db.QueryRow(ctx, createSuperUser,
 		arg.Username,
 		arg.Email,
-		arg.Names,
+		arg.FirstName,
+		arg.LastName,
 		arg.Gender,
 		arg.PasswordHash,
 		arg.Verified,
@@ -122,7 +129,8 @@ func (q *Queries) CreateSuperUser(ctx context.Context, arg CreateSuperUserParams
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -141,7 +149,8 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     username,
     email,
-    names,
+    first_name,
+    last_name,
     gender,
     password_hash,
     verified,
@@ -150,14 +159,15 @@ INSERT INTO users (
     created_at,
     updated_at
 )
-VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 )
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+VALUES( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11)
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type CreateUserParams struct {
 	Username     string             `json:"username"`
 	Email        string             `json:"email"`
-	Names        string             `json:"names"`
+	FirstName    string             `json:"first_name"`
+	LastName     string             `json:"last_name"`
 	Gender       string             `json:"gender"`
 	PasswordHash string             `json:"password_hash"`
 	Verified     pgtype.Bool        `json:"verified"`
@@ -171,7 +181,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
 		arg.Email,
-		arg.Names,
+		arg.FirstName,
+		arg.LastName,
 		arg.Gender,
 		arg.PasswordHash,
 		arg.Verified,
@@ -185,7 +196,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -211,7 +223,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id FROM users
+SELECT id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id FROM users
 ORDER BY $1
 `
 
@@ -228,7 +240,8 @@ func (q *Queries) GetAllUsers(ctx context.Context, dollar_1 interface{}) ([]User
 			&i.ID,
 			&i.Username,
 			&i.Email,
-			&i.Names,
+			&i.FirstName,
+			&i.LastName,
 			&i.Gender,
 			&i.PasswordHash,
 			&i.Verified,
@@ -251,7 +264,7 @@ func (q *Queries) GetAllUsers(ctx context.Context, dollar_1 interface{}) ([]User
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id FROM users 
+SELECT id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id FROM users 
 WHERE email = $1 LIMIT 1
 `
 
@@ -262,7 +275,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -283,7 +297,7 @@ UPDATE users
     verified = true,
     updated_at = $1
 WHERE id = $2
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type MakeUserVerifiedParams struct {
@@ -298,7 +312,8 @@ func (q *Queries) MakeUserVerified(ctx context.Context, arg MakeUserVerifiedPara
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -314,7 +329,7 @@ func (q *Queries) MakeUserVerified(ctx context.Context, arg MakeUserVerifiedPara
 }
 
 const paginateUsers = `-- name: PaginateUsers :many
-SELECT id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id FROM users
+SELECT id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id FROM users
 ORDER BY $1
 OFFSET $2
 LIMIT $3
@@ -339,7 +354,8 @@ func (q *Queries) PaginateUsers(ctx context.Context, arg PaginateUsersParams) ([
 			&i.ID,
 			&i.Username,
 			&i.Email,
-			&i.Names,
+			&i.FirstName,
+			&i.LastName,
 			&i.Gender,
 			&i.PasswordHash,
 			&i.Verified,
@@ -367,7 +383,7 @@ UPDATE users
     auth_id = $1,
     updated_at = $2
 WHERE id = $3
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type SetUserAuthIdParams struct {
@@ -383,7 +399,8 @@ func (q *Queries) SetUserAuthId(ctx context.Context, arg SetUserAuthIdParams) (U
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -402,17 +419,19 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
   SET
     username = $1,
-    names = $2,
-    gender = $3,
-    birthday = $4,
-    updated_at = $5
-WHERE id = $6
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+    first_name = $2,
+    last_name = $3,
+    gender = $4,
+    birthday = $5,
+    updated_at = $6
+WHERE id = $7
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type UpdateUserParams struct {
 	Username  string             `json:"username"`
-	Names     string             `json:"names"`
+	FirstName string             `json:"first_name"`
+	LastName  string             `json:"last_name"`
 	Gender    string             `json:"gender"`
 	Birthday  pgtype.Timestamptz `json:"birthday"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
@@ -422,7 +441,8 @@ type UpdateUserParams struct {
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.Username,
-		arg.Names,
+		arg.FirstName,
+		arg.LastName,
 		arg.Gender,
 		arg.Birthday,
 		arg.UpdatedAt,
@@ -433,7 +453,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -454,7 +475,7 @@ UPDATE users
     email = $1,
     updated_at = $2
 WHERE id = $3
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type UpdateUserEmailParams struct {
@@ -470,7 +491,8 @@ func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
@@ -491,7 +513,7 @@ UPDATE users
     password_hash = $1,
     updated_at = $2
 WHERE id = $3
-RETURNING id, username, email, names, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+RETURNING id, username, email, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
 `
 
 type UpdateUserPasswordParams struct {
@@ -507,7 +529,8 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 		&i.ID,
 		&i.Username,
 		&i.Email,
-		&i.Names,
+		&i.FirstName,
+		&i.LastName,
 		&i.Gender,
 		&i.PasswordHash,
 		&i.Verified,
