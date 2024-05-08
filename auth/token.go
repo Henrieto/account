@@ -7,6 +7,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GenerateToken(length int) (string, error) {
@@ -20,6 +22,7 @@ func GenerateToken(length int) (string, error) {
 	}
 	return string(codes), nil
 }
+
 func GenerateRandomBytes(length int) ([]byte, error) {
 	codes := make([]byte, length)
 	if _, err := rand.Read(codes); err != nil {
@@ -119,4 +122,50 @@ func Decrypt(text string, ivs ...string) (string, error) {
 	plainText := make([]byte, len(cipherText))
 	cfb.XORKeyStream(plainText, cipherText)
 	return string(plainText), nil
+}
+
+func GetPasswordResetToken(email string) (string, string, error) {
+	// generate a random string , for validity
+	token := GenerateRandomString(32)
+	// hash the random string
+	hashed_token, err := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
+	// return if there was an error
+	if err != nil {
+		return "", "", err
+	}
+	// create a map object , adding the email and the random string
+	data := map[string]any{
+		"email":    email,
+		"validity": token,
+	}
+	// encode the map object to base 64 string
+	base64Data, err := EncodeToBase64String(data)
+	// return if an error occured
+	if err != nil {
+		return "", "", err
+	}
+	// encrypt the encoded string
+	encryptedData, err := Encrypt(base64Data)
+	if err != nil {
+		return "", "", err
+	}
+	return encryptedData, string(hashed_token), nil
+}
+
+func PasswordResetToken(token string) (map[string]any, error) {
+	// decrypt the encrypted token
+	decryptedData, err := Decrypt(token)
+	// return if an error occured
+	if err != nil {
+		return nil, err
+	}
+	// create a map object to deconstruct the encoded data
+	data := map[string]any{}
+	// decode the encoded data
+	err = DecodeBase64String(decryptedData, data)
+	// return if an error occured
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
