@@ -8,23 +8,32 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Amenity struct {
+	ID          int32              `json:"id"`
+	AmenityName string             `json:"amenity_name"`
+	Description string             `json:"description"`
+	Icon        string             `json:"icon"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Group struct {
-	ID        pgtype.UUID        `json:"id"`
+	ID        int32              `json:"id"`
 	Name      string             `json:"name"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 type GroupPermission struct {
-	ID           pgtype.UUID        `json:"id"`
-	GroupID      pgtype.UUID        `json:"group_id"`
-	PermissionID pgtype.UUID        `json:"permission_id"`
+	ID           int32              `json:"id"`
+	GroupID      pgtype.Int4        `json:"group_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Permission struct {
-	ID        pgtype.UUID        `json:"id"`
+	ID        int32              `json:"id"`
 	Model     string             `json:"model"`
 	Name      string             `json:"name"`
 	Codename  string             `json:"codename"`
@@ -32,10 +41,88 @@ type Permission struct {
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
+type Property struct {
+	ID              int32              `json:"id"`
+	PropertyName    string             `json:"property_name"`
+	Description     string             `json:"description"`
+	Host            pgtype.Int4        `json:"host"`
+	PropertyType    pgtype.Int4        `json:"property_type"`
+	Country         string             `json:"country"`
+	State           string             `json:"state"`
+	City            string             `json:"city"`
+	Address         string             `json:"address"`
+	AccomodateCount pgtype.Int4        `json:"accomodate_count"`
+	Available       pgtype.Bool        `json:"available"`
+	StartDate       pgtype.Timestamptz `json:"start_date"`
+	EndDate         pgtype.Timestamptz `json:"end_date"`
+	Price           pgtype.Numeric     `json:"price"`
+	PriceType       string             `json:"price_type"`
+	MinimumStay     pgtype.Numeric     `json:"minimum_stay"`
+	Status          string             `json:"status"`
+	Size            string             `json:"size"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PropertyAmenity struct {
+	ID        int32              `json:"id"`
+	Amenity   pgtype.Int4        `json:"amenity"`
+	Property  pgtype.Int4        `json:"property"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PropertyImage struct {
+	ID        int32              `json:"id"`
+	Property  pgtype.Int4        `json:"property"`
+	Image     string             `json:"image"`
+	Alt       string             `json:"alt"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PropertyReview struct {
+	ID            int32              `json:"id"`
+	Property      pgtype.Int4        `json:"property"`
+	Reviewer      pgtype.Int4        `json:"reviewer"`
+	ReviewComment string             `json:"review_comment"`
+	Rating        float64            `json:"rating"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	Status        string             `json:"status"`
+}
+
+type PropertyType struct {
+	ID          int32              `json:"id"`
+	TypeName    string             `json:"type_name"`
+	Description string             `json:"description"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Space struct {
+	ID          int32              `json:"id"`
+	SpaceType   string             `json:"space_type"`
+	Property    pgtype.Int4        `json:"property"`
+	Description string             `json:"description"`
+	Size        string             `json:"size"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type SpaceAmenity struct {
+	ID        int32              `json:"id"`
+	Amenity   pgtype.Int4        `json:"amenity"`
+	Space     pgtype.Int4        `json:"space"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
 type User struct {
-	ID           pgtype.UUID        `json:"id"`
+	ID           int32              `json:"id"`
 	Username     string             `json:"username"`
 	Email        string             `json:"email"`
+	Phone        pgtype.Text        `json:"phone"`
 	FirstName    string             `json:"first_name"`
 	LastName     string             `json:"last_name"`
 	Gender       string             `json:"gender"`
@@ -47,13 +134,23 @@ type User struct {
 	AuthID       pgtype.Text        `json:"auth_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-	GroupID      pgtype.UUID        `json:"group_id"`
+	GroupID      pgtype.Int4        `json:"group_id"`
 }
 
 type UserPermission struct {
-	ID           pgtype.UUID        `json:"id"`
-	UserID       pgtype.UUID        `json:"user_id"`
-	PermissionID pgtype.UUID        `json:"permission_id"`
+	ID           int32              `json:"id"`
+	UserID       pgtype.Int4        `json:"user_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type VerifyIdentityData struct {
+	ID                  int32              `json:"id"`
+	RandomString        string             `json:"random_string"`
+	IdentificationType  string             `json:"identification_type"`
+	IdentificationValue string             `json:"identification_value"`
+	Otp                 string             `json:"otp"`
+	Expiry              pgtype.Timestamptz `json:"expiry"`
+	OperationType       string             `json:"operation_type"`
 }

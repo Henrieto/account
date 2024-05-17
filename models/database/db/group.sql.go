@@ -11,7 +11,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createUserGroup = `-- name: CreateUserGroup :many
+const addUserToGroup = `-- name: AddUserToGroup :exec
+UPDATE users
+  SET
+    group_id = $1,
+    updated_at = $2
+WHERE id = $3
+RETURNING id, username, email, phone, first_name, last_name, gender, password_hash, verified, birthday, staff, superuser, auth_id, created_at, updated_at, group_id
+`
+
+type AddUserToGroupParams struct {
+	GroupID   pgtype.Int4        `json:"group_id"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+	ID        int32              `json:"id"`
+}
+
+func (q *Queries) AddUserToGroup(ctx context.Context, arg AddUserToGroupParams) error {
+	_, err := q.db.Exec(ctx, addUserToGroup, arg.GroupID, arg.UpdatedAt, arg.ID)
+	return err
+}
+
+const countGroups = `-- name: CountGroups :one
+SELECT count(id) FROM groups
+`
+
+func (q *Queries) CountGroups(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countGroups)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const createUserGroup = `-- name: CreateUserGroup :one
 INSERT INTO groups (
     name,
     created_at,
@@ -27,29 +58,16 @@ type CreateUserGroupParams struct {
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
-func (q *Queries) CreateUserGroup(ctx context.Context, arg CreateUserGroupParams) ([]Group, error) {
-	rows, err := q.db.Query(ctx, createUserGroup, arg.Name, arg.CreatedAt, arg.UpdatedAt)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Group{}
-	for rows.Next() {
-		var i Group
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) CreateUserGroup(ctx context.Context, arg CreateUserGroupParams) (Group, error) {
+	row := q.db.QueryRow(ctx, createUserGroup, arg.Name, arg.CreatedAt, arg.UpdatedAt)
+	var i Group
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const deleteGroup = `-- name: DeleteGroup :exec
@@ -57,7 +75,7 @@ DELETE FROM groups
 WHERE id = $1
 `
 
-func (q *Queries) DeleteGroup(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteGroup(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteGroup, id)
 	return err
 }
@@ -159,7 +177,7 @@ RETURNING id, name, created_at, updated_at
 type UpdateGroupParams struct {
 	Name      string             `json:"name"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
-	ID        pgtype.UUID        `json:"id"`
+	ID        int32              `json:"id"`
 }
 
 func (q *Queries) UpdateGroup(ctx context.Context, arg UpdateGroupParams) (Group, error) {

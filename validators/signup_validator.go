@@ -10,14 +10,15 @@ import (
 )
 
 type SignupData struct {
-	FirstName       string `json:"first_name" validate:"required"`
-	LastName        string `json:"last_name" validate:"required"`
-	Email           string `json:"email" validate:"required,email"`
-	Gender          string
-	Password        string `json:"password" validate:"required"`
-	Birthday        time.Time
-	ConfirmPassword string `json:"confirm_password" validate:"required"`
-	Terms           string `json:"terms" validate:"required"`
+	FirstName       string    `json:"first_name,omitempty" validate:"required"`
+	LastName        string    `json:"last_name,omitempty" validate:"required"`
+	Email           string    `json:"email,omitempty" validate:"required,email"`
+	Gender          string    `json:"gender,omitempty" validate:"required"`
+	Phone           string    `json:"phone,omitempty"`
+	Password        string    `json:"password,omitempty" validate:"required"`
+	Birthday        time.Time `json:"birthday,omitempty"`
+	ConfirmPassword string    `json:"confirm_password,omitempty" validate:"required"`
+	Terms           string    `json:"terms,omitempty" validate:"required"`
 }
 
 type SignupValidationErrorData struct {
@@ -123,6 +124,8 @@ func (data *SignupData) Valid() (*models.User, error) {
 		Gender:       data.Gender,
 		Birthday:     pgtype.Timestamptz{Time: data.Birthday},
 		PasswordHash: string(password),
+		CreatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		UpdatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	}
 
 	return user, nil

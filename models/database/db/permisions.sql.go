@@ -23,8 +23,8 @@ RETURNING id, group_id, permission_id, created_at, updated_at
 `
 
 type AddPermissionToGroupParams struct {
-	GroupID      pgtype.UUID        `json:"group_id"`
-	PermissionID pgtype.UUID        `json:"permission_id"`
+	GroupID      pgtype.Int4        `json:"group_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -59,8 +59,8 @@ RETURNING id, user_id, permission_id, created_at, updated_at
 `
 
 type AddPermissionToUserParams struct {
-	UserID       pgtype.UUID        `json:"user_id"`
-	PermissionID pgtype.UUID        `json:"permission_id"`
+	UserID       pgtype.Int4        `json:"user_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -81,6 +81,43 @@ func (q *Queries) AddPermissionToUser(ctx context.Context, arg AddPermissionToUs
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const countGroupPermissions = `-- name: CountGroupPermissions :one
+Select count(id) from permissions
+Join group_permissions on permissions.id = group_permissions.permission_id
+WHERE group_permissions.group_id = $1
+`
+
+func (q *Queries) CountGroupPermissions(ctx context.Context, groupID pgtype.Int4) (int64, error) {
+	row := q.db.QueryRow(ctx, countGroupPermissions, groupID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countPermissions = `-- name: CountPermissions :one
+SELECT count(id) FROM permissions
+`
+
+func (q *Queries) CountPermissions(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPermissions)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countUserPermissions = `-- name: CountUserPermissions :one
+Select count(id) from permissions
+Join user_permissions on permissions.id = user_permissions.permission_id
+WHERE user_permissions.user_id = $1
+`
+
+func (q *Queries) CountUserPermissions(ctx context.Context, userID pgtype.Int4) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserPermissions, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const createPermission = `-- name: CreatePermission :one
@@ -125,11 +162,17 @@ func (q *Queries) CreatePermission(ctx context.Context, arg CreatePermissionPara
 
 const deleteGroupPermission = `-- name: DeleteGroupPermission :exec
 DELETE FROM group_permissions
-WHERE id = $1
+WHERE group_permissions.group_id = $1 
+AND group_permissions.permission_id = $2
 `
 
-func (q *Queries) DeleteGroupPermission(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteGroupPermission, id)
+type DeleteGroupPermissionParams struct {
+	GroupID      pgtype.Int4 `json:"group_id"`
+	PermissionID pgtype.Int4 `json:"permission_id"`
+}
+
+func (q *Queries) DeleteGroupPermission(ctx context.Context, arg DeleteGroupPermissionParams) error {
+	_, err := q.db.Exec(ctx, deleteGroupPermission, arg.GroupID, arg.PermissionID)
 	return err
 }
 
@@ -138,19 +181,77 @@ DELETE FROM permissions
 WHERE id = $1
 `
 
-func (q *Queries) DeletePermission(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeletePermission(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deletePermission, id)
 	return err
 }
 
 const deleteUserPermission = `-- name: DeleteUserPermission :exec
 DELETE FROM user_permissions
-WHERE id = $1
+WHERE user_permissions.user_id = $1 
+AND user_permissions.permission_id = $2
 `
 
-func (q *Queries) DeleteUserPermission(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteUserPermission, id)
+type DeleteUserPermissionParams struct {
+	UserID       pgtype.Int4 `json:"user_id"`
+	PermissionID pgtype.Int4 `json:"permission_id"`
+}
+
+func (q *Queries) DeleteUserPermission(ctx context.Context, arg DeleteUserPermissionParams) error {
+	_, err := q.db.Exec(ctx, deleteUserPermission, arg.UserID, arg.PermissionID)
 	return err
+}
+
+const getAllGroupPermissions = `-- name: GetAllGroupPermissions :many
+Select permissions.id, model, name, codename, permissions.created_at, permissions.updated_at, group_permissions.id, group_id, permission_id, group_permissions.created_at, group_permissions.updated_at from permissions
+Join group_permissions on permissions.id = group_permissions.permission_id
+WHERE group_permissions.group_id = $1
+`
+
+type GetAllGroupPermissionsRow struct {
+	ID           int32              `json:"id"`
+	Model        string             `json:"model"`
+	Name         string             `json:"name"`
+	Codename     string             `json:"codename"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	ID_2         int32              `json:"id_2"`
+	GroupID      pgtype.Int4        `json:"group_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
+	CreatedAt_2  pgtype.Timestamptz `json:"created_at_2"`
+	UpdatedAt_2  pgtype.Timestamptz `json:"updated_at_2"`
+}
+
+func (q *Queries) GetAllGroupPermissions(ctx context.Context, groupID pgtype.Int4) ([]GetAllGroupPermissionsRow, error) {
+	rows, err := q.db.Query(ctx, getAllGroupPermissions, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAllGroupPermissionsRow{}
+	for rows.Next() {
+		var i GetAllGroupPermissionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Model,
+			&i.Name,
+			&i.Codename,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ID_2,
+			&i.GroupID,
+			&i.PermissionID,
+			&i.CreatedAt_2,
+			&i.UpdatedAt_2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAllPermssions = `-- name: GetAllPermssions :many
@@ -193,6 +294,58 @@ func (q *Queries) GetAllPermssions(ctx context.Context, arg GetAllPermssionsPara
 	return items, nil
 }
 
+const getAllUserPermissions = `-- name: GetAllUserPermissions :many
+Select permissions.id, model, name, codename, permissions.created_at, permissions.updated_at, user_permissions.id, user_id, permission_id, user_permissions.created_at, user_permissions.updated_at from permissions
+Join user_permissions on permissions.id = user_permissions.permission_id
+WHERE user_permissions.user_id = $1
+`
+
+type GetAllUserPermissionsRow struct {
+	ID           int32              `json:"id"`
+	Model        string             `json:"model"`
+	Name         string             `json:"name"`
+	Codename     string             `json:"codename"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	ID_2         int32              `json:"id_2"`
+	UserID       pgtype.Int4        `json:"user_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
+	CreatedAt_2  pgtype.Timestamptz `json:"created_at_2"`
+	UpdatedAt_2  pgtype.Timestamptz `json:"updated_at_2"`
+}
+
+func (q *Queries) GetAllUserPermissions(ctx context.Context, userID pgtype.Int4) ([]GetAllUserPermissionsRow, error) {
+	rows, err := q.db.Query(ctx, getAllUserPermissions, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAllUserPermissionsRow{}
+	for rows.Next() {
+		var i GetAllUserPermissionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Model,
+			&i.Name,
+			&i.Codename,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ID_2,
+			&i.UserID,
+			&i.PermissionID,
+			&i.CreatedAt_2,
+			&i.UpdatedAt_2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getGroupPermissions = `-- name: GetGroupPermissions :many
 Select permissions.id, model, name, codename, permissions.created_at, permissions.updated_at, group_permissions.id, group_id, permission_id, group_permissions.created_at, group_permissions.updated_at from permissions
 Join group_permissions on permissions.id = group_permissions.permission_id
@@ -202,21 +355,21 @@ LIMIT $3
 `
 
 type GetGroupPermissionsParams struct {
-	GroupID pgtype.UUID `json:"group_id"`
+	GroupID pgtype.Int4 `json:"group_id"`
 	Offset  int32       `json:"offset"`
 	Limit   int32       `json:"limit"`
 }
 
 type GetGroupPermissionsRow struct {
-	ID           pgtype.UUID        `json:"id"`
+	ID           int32              `json:"id"`
 	Model        string             `json:"model"`
 	Name         string             `json:"name"`
 	Codename     string             `json:"codename"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-	ID_2         pgtype.UUID        `json:"id_2"`
-	GroupID      pgtype.UUID        `json:"group_id"`
-	PermissionID pgtype.UUID        `json:"permission_id"`
+	ID_2         int32              `json:"id_2"`
+	GroupID      pgtype.Int4        `json:"group_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
 	CreatedAt_2  pgtype.Timestamptz `json:"created_at_2"`
 	UpdatedAt_2  pgtype.Timestamptz `json:"updated_at_2"`
 }
@@ -253,6 +406,25 @@ func (q *Queries) GetGroupPermissions(ctx context.Context, arg GetGroupPermissio
 	return items, nil
 }
 
+const getPermission = `-- name: GetPermission :one
+SELECT id, model, name, codename, created_at, updated_at FROM permissions
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetPermission(ctx context.Context, id int32) (Permission, error) {
+	row := q.db.QueryRow(ctx, getPermission, id)
+	var i Permission
+	err := row.Scan(
+		&i.ID,
+		&i.Model,
+		&i.Name,
+		&i.Codename,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getPermissionByName = `-- name: GetPermissionByName :one
 SELECT id, model, name, codename, created_at, updated_at FROM permissions
 WHERE name = $1 LIMIT 1
@@ -281,21 +453,21 @@ LIMIT $3
 `
 
 type GetUserPermissionsParams struct {
-	UserID pgtype.UUID `json:"user_id"`
+	UserID pgtype.Int4 `json:"user_id"`
 	Offset int32       `json:"offset"`
 	Limit  int32       `json:"limit"`
 }
 
 type GetUserPermissionsRow struct {
-	ID           pgtype.UUID        `json:"id"`
+	ID           int32              `json:"id"`
 	Model        string             `json:"model"`
 	Name         string             `json:"name"`
 	Codename     string             `json:"codename"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-	ID_2         pgtype.UUID        `json:"id_2"`
-	UserID       pgtype.UUID        `json:"user_id"`
-	PermissionID pgtype.UUID        `json:"permission_id"`
+	ID_2         int32              `json:"id_2"`
+	UserID       pgtype.Int4        `json:"user_id"`
+	PermissionID pgtype.Int4        `json:"permission_id"`
 	CreatedAt_2  pgtype.Timestamptz `json:"created_at_2"`
 	UpdatedAt_2  pgtype.Timestamptz `json:"updated_at_2"`
 }
@@ -348,7 +520,7 @@ type UpdatePermissionParams struct {
 	Name      string             `json:"name"`
 	Codename  string             `json:"codename"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
-	ID        pgtype.UUID        `json:"id"`
+	ID        int32              `json:"id"`
 }
 
 func (q *Queries) UpdatePermission(ctx context.Context, arg UpdatePermissionParams) (Permission, error) {

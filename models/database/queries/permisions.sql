@@ -9,11 +9,19 @@ INSERT INTO permissions (
 VALUES ($1 ,$2 ,$3 ,$4 ,$5 )
 RETURNING *;
 
+
+-- name: CountPermissions :one
+SELECT count(id) FROM permissions;
+
 -- name: GetAllPermssions :many
 SELECT * FROM permissions
 ORDER BY $1
 OFFSET $2
 LIMIT $3;
+
+-- name: GetPermission :one
+SELECT * FROM permissions
+WHERE id = $1 LIMIT 1;
 
 -- name: GetPermissionByName :one
 SELECT * FROM permissions
@@ -45,10 +53,16 @@ INSERT INTO user_permissions (
 VALUES ($1,$2,$3,$4)
 RETURNING *;
 
+-- name: CountUserPermissions :one
+Select count(id) from permissions
+Join user_permissions on permissions.id = user_permissions.permission_id
+WHERE user_permissions.user_id = $1;
 
 -- name: DeleteUserPermission :exec
 DELETE FROM user_permissions
-WHERE id = $1;
+WHERE user_permissions.user_id = $1 
+AND user_permissions.permission_id = $2;
+
 
 -- name: GetUserPermissions :many
 Select * from permissions
@@ -56,6 +70,11 @@ Join user_permissions on permissions.id = user_permissions.permission_id
 WHERE user_permissions.user_id = $1
 OFFSET $2
 LIMIT $3;
+
+-- name: GetAllUserPermissions :many
+Select * from permissions
+Join user_permissions on permissions.id = user_permissions.permission_id
+WHERE user_permissions.user_id = $1;
 
 -- name: AddPermissionToGroup :one
 INSERT INTO group_permissions (
@@ -67,6 +86,10 @@ INSERT INTO group_permissions (
 VALUES ($1,$2,$3,$4)
 RETURNING *;
 
+-- name: CountGroupPermissions :one
+Select count(id) from permissions
+Join group_permissions on permissions.id = group_permissions.permission_id
+WHERE group_permissions.group_id = $1;
 
 -- name: GetGroupPermissions :many
 Select * from permissions
@@ -75,6 +98,12 @@ WHERE group_permissions.group_id = $1
 OFFSET $2
 LIMIT $3;
 
+-- name: GetAllGroupPermissions :many
+Select * from permissions
+Join group_permissions on permissions.id = group_permissions.permission_id
+WHERE group_permissions.group_id = $1;
+
 -- name: DeleteGroupPermission :exec
 DELETE FROM group_permissions
-WHERE id = $1;
+WHERE group_permissions.group_id = $1 
+AND group_permissions.permission_id = $2;

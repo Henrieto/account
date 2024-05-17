@@ -8,7 +8,6 @@ import (
 
 type Claims struct {
 	Object any
-	Params map[string]any
 	jwt.StandardClaims
 }
 
@@ -18,7 +17,6 @@ func NewClaims() *Claims {
 
 func (claims *Claims) InvalidateToken(secretKey string) (string, error) {
 	claims.Object = nil
-	claims.Params = make(map[string]any)
 	claims.StandardClaims = jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(-time.Hour * 24).Unix(),
 	}

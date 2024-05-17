@@ -3,231 +3,216 @@ package account
 import (
 	"net/http"
 
+	"github.com/henrieto/account/auth"
+	"github.com/henrieto/account/decorators"
 	"github.com/henrieto/account/handlers"
 	"github.com/henrieto/jax"
 )
 
 var Routes = []jax.Route{
-	{
+	// profile routes
+	// user signup route
+	jax.Route{
 		Path:    "/signup",
 		Handler: handlers.Signup,
 		Method:  http.MethodPost,
 		Name:    "signup",
 	},
-	{
+	// user login route
+	jax.Route{
 		Path:    "/login",
 		Handler: handlers.Login,
 		Method:  http.MethodPost,
 		Name:    "login",
 	},
-	// {
-	// 	Path: "/profile",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.Profile, "user-can_update_own"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "profile",
-	// },
-	// {
-	// 	Prefix:  "/identiy",
-	// 	Path:    "/verifiy",
-	// 	Handler: handlers.VerifyIdentity,
-	// 	Method:  http.MethodPost,
-	// 	Name:    "verify-identity",
-	// },
-	// {
-	// 	Prefix:  "/password",
-	// 	Path:    "/forgort",
-	// 	Handler: handlers.ForgortPassword,
-	// 	Method:  http.MethodPost,
-	// 	Name:    "forgot-password",
-	// },
-	// {
-	// 	Prefix:  "/password",
-	// 	Path:    "/change",
-	// 	Handler: handlers.ChangePassword,
-	// 	Method:  http.MethodPost,
-	// 	Name:    "change-password",
-	// },
-	// {
-	// 	Prefix: "/group",
-	// 	Path:   "/create",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.CreateGroup, "group-can_create"),
-	// 	),
-	// 	Method: http.MethodPost,
-	// 	Name:   "create-group",
-	// },
-	// {
-	// 	Prefix: "/group",
-	// 	Path:   "/update",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.UpdateGroup, "group-can_update"),
-	// 	),
-	// 	Method: http.MethodPost,
-	// 	Name:   "update-group",
-	// },
-	// {
-	// 	Prefix: "/group",
-	// 	Path:   "/list",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.ListGroup, "group-can_view", "can_view"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "list-group",
-	// },
-	// {
-	// 	Prefix: "/group",
-	// 	Path:   "/get/{id}",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.GetGroup, "group-can_view", "can_view"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "get-group-bi-id",
-	// },
-	// {
-	// 	Prefix: "/group",
-	// 	Path:   "/get/name/{name}",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.GetGroup, "group-can_view", "can_view"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "get-group-by-name",
-	// },
-	// {
-	// 	Prefix: "/group",
-	// 	Path:   "/delete/{id}",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.DeleteGroup, "group-can_delete"),
-	// 	),
-	// 	Method: http.MethodDelete,
-	// 	Name:   "delete-group",
-	// },
-	// {
-	// 	Prefix: "/group",
-	// 	Path:   "/add/user",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.AddUserToGroup, "group_user-can_create"),
-	// 	),
-	// 	Method: http.MethodPost,
-	// 	Name:   "add-user-to-group",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/create",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.CreatePermission, "permission-can_create"),
-	// 	),
-	// 	Method: http.MethodPost,
-	// 	Name:   "create-permission",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/update/{id}",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.UpdatePermission, "permission-can_update"),
-	// 	),
-	// 	Method: http.MethodPut,
-	// 	Name:   "update-permission",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/list",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.ListPermission, "permission-can_view"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "list-permission",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/get/{id}",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.GetPermission, "permission-can_view"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "get-permission",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/delete/{id}",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.DeletePermission, "permission-can_delete"),
-	// 	),
-	// 	Method: http.MethodDelete,
-	// 	Name:   "delete-permission",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/group/add",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.AddPermissionsToGroup, "permission_group-can_create"),
-	// 	),
-	// 	Method: http.MethodPost,
-	// 	Name:   "add-permissions-to-group",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/group/remove",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.RemoveGroupPermisions, "permission_group-can_delete"),
-	// 	),
-	// 	Method: http.MethodDelete,
-	// 	Name:   "remove-permissions-from-group",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/group/get",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.GetGroupPermissions, "permission_group-can_view"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "get-group-permissions",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/user/add",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.AddPermissionsToUser, "permission_user-can_create"),
-	// 	),
-	// 	Method: http.MethodPost,
-	// 	Name:   "add-permission-to-user",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/user/get",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.GetUserPermissions, "permission_user-can_view"),
-	// 	),
-	// 	Method: http.MethodGet,
-	// 	Name:   "get-user-permissions",
-	// },
-	// {
-	// 	Prefix: "/permission",
-	// 	Path:   "/user/remove",
-	// 	Handler: jwt_auth.Protected(
-	// 		config.SECRET,
-	// 		middlewares.HasPermission(handlers.RemoveUserPermisions, "permission_user-can_delete"),
-	// 	),
-	// 	Method: http.MethodDelete,
-	// 	Name:   "remove-user-permissions",
-	// },
+	// get all user details
+	jax.Route{
+		Path: "/profile",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.Profile, "user-can_update_own"),
+		),
+		Method: http.MethodGet,
+		Name:   "profile",
+	},
+	// group routes
+	// create user group
+	jax.Route{
+		Prefix: "/group",
+		Path:   "/create",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.CreateGroup, "group-can_create"),
+		),
+		Method: http.MethodPost,
+		Name:   "create-group",
+	},
+	// update user group
+	jax.Route{
+		Prefix: "/group",
+		Path:   "/update",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.UpdateGroup, "group-can_update"),
+		),
+		Method: http.MethodPut,
+		Name:   "update-group",
+	},
+	// list groups
+	jax.Route{
+		Prefix: "/group",
+		Path:   "/list",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.ListGroups, "group-can_view"),
+		),
+		Method: http.MethodGet,
+		Name:   "list-groups",
+	},
+	// list groups by pagination
+	jax.Route{
+		Prefix: "/group",
+		Path:   "/paginate",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.PaginateGroups, "group-can_view"),
+		),
+		Method: http.MethodGet,
+		Name:   "paginate-groups",
+	},
+	// get group
+	jax.Route{
+		Prefix: "/group",
+		Path:   "/get/{name}",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.GetGroup, "group-can_view"),
+		),
+		Method: http.MethodGet,
+		Name:   "get-group",
+	},
+	jax.Route{
+		Prefix: "/group",
+		Path:   "/delete/{id}",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.DeleteGroup, "group-can_delete"),
+		),
+		Method: http.MethodDelete,
+		Name:   "delete-group",
+	},
+	// delete group
+	jax.Route{
+		Prefix: "/group",
+		Path:   "/user/add",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.AddUserToGroup, "group-can_edit"),
+		),
+		Method: http.MethodPost,
+		Name:   "add-user-to-group",
+	},
+	//permission routes
+	// create permission
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/create",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.CreatePermission, "permission-can_create"),
+		),
+		Method: http.MethodPost,
+		Name:   "create-permission",
+	},
+	// update permission
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/update/{id}",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.UpdatePermission, "permission-can_edit"),
+		),
+		Method: http.MethodPut,
+		Name:   "update-permission",
+	},
+	// list permission
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/list",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.ListPermission, "permission-can_view"),
+		),
+		Method: http.MethodGet,
+		Name:   "list-permissions",
+	},
+	// get permission
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/get/{id}",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.GetPermission, "permission-can_view"),
+		),
+		Method: http.MethodGet,
+		Name:   "get-permission",
+	},
+	// delete permission
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/delete/{id}",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.DeletePermission, "permission-can_delete"),
+		),
+		Method: http.MethodDelete,
+		Name:   "delete-permission",
+	},
+	// add permission to group
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/group/add",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.AddPermissionsToGroup, "permission-can_edit"),
+		),
+		Method: http.MethodPost,
+		Name:   "add-permission-to-group",
+	},
+	// remove permission from group
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/group/remove",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.RemoveGroupPermisions, "permission-can_edit"),
+		),
+		Method: http.MethodPost,
+		Name:   "remove-group-permission",
+	},
+	// get group permissions
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/group/{id}",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.GetGroupPermissions, "permission-can_view"),
+		),
+		Method: http.MethodGet,
+		Name:   "get-group-permissions",
+	},
+	// add permission to user
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/user/add",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.AddPermissionsToUser, "permission-can_edit"),
+		),
+		Method: http.MethodPost,
+		Name:   "add-permissions-to-user",
+	},
+	//  get user permissions
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/user/{id}",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.GetUserPermissions, "permission-can_view"),
+		),
+		Method: http.MethodGet,
+		Name:   "get-user-permissions",
+	},
+	// remove permission from user
+	jax.Route{
+		Prefix: "/permission",
+		Path:   "/user/remove",
+		Handler: auth.Protected(
+			decorators.HasPermission(handlers.RemoveUserPermisions, "permission-can_edit"),
+		),
+		Method: http.MethodPost,
+		Name:   "remove-user-permissions",
+	},
 }

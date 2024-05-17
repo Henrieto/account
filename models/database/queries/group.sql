@@ -1,4 +1,4 @@
--- name: CreateUserGroup :many
+-- name: CreateUserGroup :one
 INSERT INTO groups (
     name,
     created_at,
@@ -6,6 +6,9 @@ INSERT INTO groups (
   )
 VALUES($1 , $2 , $3)
 RETURNING *;
+
+-- name: CountGroups :one
+SELECT count(id) FROM groups;
 
 -- name: GetAllGroups :many
 SELECT * FROM groups
@@ -34,3 +37,11 @@ RETURNING *;
 -- name: DeleteGroup :exec
 DELETE FROM groups
 WHERE id = $1;
+
+-- name: AddUserToGroup :exec
+UPDATE users
+  SET
+    group_id = $1,
+    updated_at = $2
+WHERE id = $3
+RETURNING *;

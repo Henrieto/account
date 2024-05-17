@@ -1,13 +1,15 @@
 package models
 
 import (
+	"github.com/henrieto/account/models/database/db"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type User struct {
-	ID           pgtype.UUID        `json:"id"`
+	ID           int32              `json:"id"`
 	Username     string             `json:"username"`
 	Email        string             `json:"email"`
+	Phone        string             `json:"phone"`
 	FirstName    string             `json:"first_name"`
 	LastName     string             `json:"last_name"`
 	Gender       string             `json:"gender"`
@@ -19,16 +21,44 @@ type User struct {
 	AuthID       pgtype.Text        `json:"auth_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-	GroupID      pgtype.UUID        `json:"group_id"`
+	GroupID      pgtype.Int4        `json:"group_id"`
+	Permissions  []*db.Permission
 }
 
 func (user *User) HasPermission(permission string) bool {
-	return user.Superuser.Bool
+	// check if the user is a super user
+	if user.Superuser.Bool {
+		// if the user is a super user return true
+		return true
+	}
+	// iterate through the user permissions , to see if the user has the required permission
+	for _, user_permission := range user.Permissions {
+		if permission == user_permission.Codename {
+			// if the user has the required permission return true
+			return true
+		}
+	}
+	return false
 }
 
-func (user *User) HasPermissions(permissions ...string) (has bool) {
+func (user *User) HasPermissions(permissions ...string) (has_permission bool) {
+	// iterate to check if the user has the permissions required
 	for _, permsission := range permissions {
-		has = user.HasPermission(permsission)
+		has_permission = user.HasPermission(permsission)
+		if has_permission {
+			return true
+		}
+	}
+	return
+}
+
+func (user *User) HasAllPermissions(permissions ...string) (has_permission bool) {
+	// iterate to check if the user has all the permissions required
+	for _, permsission := range permissions {
+		has_permission = user.HasPermission(permsission)
+		if !has_permission {
+			return false
+		}
 	}
 	return
 }
